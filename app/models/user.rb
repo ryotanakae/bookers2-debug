@@ -7,10 +7,10 @@ class User < ApplicationRecord
   has_many :books, dependent: :destroy
   has_many :favorites, dependent: :destroy
   has_many :book_comments, dependent: :destroy
-  has_many :relationships, class_name: "Relationship", foreign_key: "follower_id", dependent: :destroy # 自分がフォローする側の関係
-  has_many :following, through: :relationships, source: :followed # 与フォロー関係を通じて参照→自分がフォローしている人
-  has_many :reverse_of_relationships, class_name: "Relationship", foreign_key: "followed_id", dependent: :destroy # 自分がフォローされる側の関係
-  has_many :followers, through: :reverse_of_relationships, source: :follower # 被フォロー関係を通じて参照→自分をフォローしている人
+  has_many :relationships, class_name: "Relationship", foreign_key: "follower_id", dependent: :destroy # フォローしている関連付け
+  has_many :following, through: :relationships, source: :followed # フォローしているユーザーを取得
+  has_many :reverse_of_relationships, class_name: "Relationship", foreign_key: "followed_id", dependent: :destroy # フォローされている関連付け
+  has_many :followers, through: :reverse_of_relationships, source: :follower # フォロワーを取得
   has_one_attached :profile_image
 
   validates :name, length: { minimum: 2, maximum: 20 }, uniqueness: true
@@ -28,6 +28,10 @@ class User < ApplicationRecord
   
   def unfollow(user)
     relationships.find_by(followed_id: user.id).destroy #フォローを外すとき
+  end
+  
+  def following?(user)
+    following.include?(user) #フォローしているか確認
   end
   
 end
